@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>星途 · 自闭症家庭支持</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --green: #4a7c59;
+  --green-light: #eef5f0;
+  --green-mid: #c8dece;
+  --amber: #c07a3a;
+  --amber-light: #fdf3e7;
+  --text: #2a2a28;
+  --text-mid: #666660;
+  --text-soft: #999994;
+  --bg: #f5f3ef;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.07);
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  color: var(--text);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+}
+
+/* Header */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--green-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-avatar svg { width: 22px; height: 22px; }
+
+.header-info { flex: 1; }
+.header-name { font-size: 15px; font-weight: 500; color: var(--text); }
+.header-status { font-size: 12px; color: var(--green); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.header-disclaimer {
+  font-size: 10px;
+  color: var(--text-soft);
+  background: var(--amber-light);
+  border: 1px solid rgba(192,122,58,0.15);
+  border-radius: 6px;
+  padding: 3px 8px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.messages::-webkit-scrollbar { display: none; }
+
+/* Welcome card */
+.welcome-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  border: 1px solid var(--border);
+  animation: fadeUp 0.4s ease;
+}
+
+.welcome-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--green-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.welcome-logo svg { width: 28px; height: 28px; }
+.welcome-title { font-size: 17px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.welcome-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 16px; }
+
+.quick-btns { display: flex; flex-direction: column; gap: 8px; }
+.quick-btn {
+  background: var(--green-light);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--green);
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s;
+  font-weight: 400;
+}
+.quick-btn:active { background: var(--green-mid); }
+.quick-arrow { opacity: 0.5; font-size: 14px; }
+
+/* Message bubbles */
+.msg { display: flex; gap: 8px; align-items: flex-end; animation: fadeUp 0.3s ease; }
+.msg.user { flex-direction: row-reverse; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--green-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green);
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 10px 13px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.bubble.ai {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 5px;
+}
+
+.bubble.user {
+  background: var(--green);
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.bubble.ai ul, .bubble.ai ol {
+  padding-left: 16px;
+  margin: 6px 0;
+}
+.bubble.ai li { margin: 3px 0; }
+.bubble.ai strong { font-weight: 500; }
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.typing-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  border-bottom-left-radius: 5px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-soft);
+  animation: bounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+/* Disclaimer in bubble */
+.disclaimer {
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: var(--amber-light);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--amber);
+  line-height: 1.5;
+  border-left: 2px solid var(--amber);
+}
+
+/* Input area */
+.input-area {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.attach-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.attach-btn:active { background: var(--green-light); }
+.attach-btn svg { width: 18px; height: 18px; color: var(--text-mid); }
+
+.input-wrap {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 12px;
+  min-height: 38px;
+  transition: border-color 0.15s;
+}
+.input-wrap:focus-within { border-color: var(--green-mid); }
+
+textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  max-height: 100px;
+  min-height: 20px;
+  overflow-y: auto;
+}
+textarea::placeholder { color: var(--text-soft); }
+
+.send-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--green);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+.send-btn:active { transform: scale(0.93); background: #3a6347; }
+.send-btn:disabled { background: var(--green-mid); cursor: default; }
+.send-btn svg { width: 18px; height: 18px; color: white; }
+
+/* File preview */
+.file-preview {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--amber-light);
+  border: 1px solid rgba(192,122,58,0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--amber);
+}
+.file-preview.show { display: flex; }
+.file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-remove {
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-soft);
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Error toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(40,40,40,0.9);
+  color: white;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 99;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="header-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="1.5">
+        <path d="M12 2C8 2 5 5 5 9c0 2.5 1.2 4.7 3 6.1V17h8v-1.9C17.8 13.7 19 11.5 19 9c0-4-3-7-7-7z"/>
+        <path d="M9 17v1a3 3 0 006 0v-1"/>
+      </svg>
+    </div>
+    <div class="header-info">
+      <div class="header-name">星途 AI 助手</div>
+      <div class="header-status"><span class="status-dot"></span>在线服务中</div>
+    </div>
+    <div class="header-disclaimer">仅供参考<br>不替代医疗建议</div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="welcome-card">
+      <div class="welcome-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="1.5">
+          <path d="M12 2C8 2 5 5 5 9c0 2.5 1.2 4.7 3 6.1V17h8v-1.9C17.8 13.7 19 11.5 19 9c0-4-3-7-7-7z"/>
+          <path d="M9 17v1a3 3 0 006 0v-1"/>
+        </svg>
+      </div>
+      <div class="welcome-title">您好，我是星途 AI 助手</div>
+      <div class="welcome-desc">专注为自闭症儿童家长提供支持与陪伴。无论您是刚收到确诊，还是在干预路上遇到困惑，都可以在这里提问。也可上传检测报告，我来帮您解读。</div>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="sendQuick('孩子刚确诊，我该怎么办？')">
+          孩子刚确诊，我该怎么办？<span class="quick-arrow">›</span>
+        </button>
+        <button class="quick-btn" onclick="sendQuick('ABA干预是什么？适合我的孩子吗？')">
+          ABA干预是什么？适合我的孩子吗？<span class="quick-arrow">›</span>
+        </button>
+        <button class="quick-btn" onclick="sendQuick('尿有机酸检测是什么？')">
+          尿有机酸检测是什么？<span class="quick-arrow">›</span>
+        </button>
+        <button class="quick-btn" onclick="sendQuick('如何办理残疾证和申请补贴？')">
+          如何办理残疾证和申请补贴？<span class="quick-arrow">›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="file-preview" id="filePreview">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span class="file-name" id="fileName"></span>
+      <span class="file-remove" onclick="removeFile()">×</span>
+    </div>
+    <div class="input-row">
+      <div class="attach-btn" onclick="document.getElementById('fileInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </div>
+      <div class="input-wrap">
+        <textarea id="input" placeholder="输入您的问题..." rows="1"
+          oninput="autoResize(this)"
+          onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.docx" style="display:none" onchange="handleFile(this)">
+<div class="toast" id="toast"></div>
+
+<script>
+const API_KEY = 'sk-8866deeae744409db332c1577e30762e';
+const APP_ID = 'abb08e3de0f24acfb0d33d9245bf8495';
+
+let conversationId = null;
+let isLoading = false;
+let pendingFile = null;
+let pendingFileBase64 = null;
+let pendingFileType = null;
+
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const filePreview = document.getElementById('filePreview');
+const fileNameEl = document.getElementById('fileName');
+
+inputEl.addEventListener('input', () => {
+  sendBtn.disabled = inputEl.value.trim() === '' && !pendingFile;
+});
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!sendBtn.disabled && !isLoading) sendMessage();
+  }
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('文件不能超过10MB'); return; }
+
+  pendingFile = file;
+  fileNameEl.textContent = file.name;
+  filePreview.classList.add('show');
+  sendBtn.disabled = false;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pendingFileBase64 = e.target.result.split(',')[1];
+    pendingFileType = file.type;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeFile() {
+  pendingFile = null;
+  pendingFileBase64 = null;
+  pendingFileType = null;
+  filePreview.classList.remove('show');
+  sendBtn.disabled = inputEl.value.trim() === '';
+}
+
+function sendQuick(text) {
+  inputEl.value = text;
+  autoResize(inputEl);
+  sendBtn.disabled = false;
+  sendMessage();
+}
+
+function addUserBubble(text, hasFile) {
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  let content = text || '';
+  if (hasFile) content = (content ? content + '\n' : '') + '[已上传文件：' + pendingFile.name + ']';
+  div.innerHTML = `
+    <div class="bubble user">${content.replace(/\n/g,'<br>')}</div>
+    <div class="msg-avatar">我</div>
+  `;
+  messagesEl.appendChild(div);
+  scrollBottom();
+  return div;
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing-indicator';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="msg-avatar">星</div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function addAIBubble(text) {
+  const div = document.createElement('div');
+  div.className = 'msg';
+
+  const hasDisclaimer = text.includes('温馨提示') || text.includes('仅供参考');
+  let mainText = text;
+  let disclaimerText = '';
+
+  if (hasDisclaimer) {
+    const idx = text.indexOf('⚠️');
+    if (idx > -1) {
+      mainText = text.substring(0, idx).trim();
+      disclaimerText = text.substring(idx).trim();
+    }
+  }
+
+  const formatted = formatText(mainText);
+  div.innerHTML = `
+    <div class="msg-avatar">星</div>
+    <div class="bubble ai">
+      ${formatted}
+      ${disclaimerText ? `<div class="disclaimer">${disclaimerText.replace('⚠️ ','')}</div>` : ''}
+    </div>
+  `;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p>')
+    .replace(/$/, '</p>');
+}
+
+function scrollBottom() {
+  setTimeout(() => messagesEl.scrollTop = messagesEl.scrollHeight, 50);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if ((!text && !pendingFile) || isLoading) return;
+
+  isLoading = true;
+  sendBtn.disabled = true;
+
+  addUserBubble(text, !!pendingFile);
+
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+
+  const fileToSend = pendingFile;
+  const b64 = pendingFileBase64;
+  const fType = pendingFileType;
+  removeFile();
+
+  addTyping();
+
+  try {
+    const messages = [];
+
+    if (b64 && fType) {
+      if (fType.startsWith('image/')) {
+        messages.push({
+          role: 'user',
+          content: [
+            { type: 'image', image: `data:${fType};base64,${b64}` },
+            { type: 'text', text: text || '请帮我解读这份检测报告' }
+          ]
+        });
+      } else {
+        messages.push({
+          role: 'user',
+          content: [
+            { type: 'file', file: `data:${fType};base64,${b64}` },
+            { type: 'text', text: text || '请帮我解读这份检测报告' }
+          ]
+        });
+      }
+    } else {
+      messages.push({ role: 'user', content: text });
+    }
+
+    const body = {
+      model: 'qwen-max',
+      input: { messages },
+      parameters: { result_format: 'message', incremental_output: false }
+    };
+
+    if (conversationId) body.input.session_id = conversationId;
+
+    const res = await fetch('https://dashscope.aliyuncs.com/api/v1/apps/' + APP_ID + '/completion', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + API_KEY
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    removeTyping();
+
+    if (data.output) {
+      if (data.output.session_id) conversationId = data.output.session_id;
+      const reply = data.output.text || data.output.choices?.[0]?.message?.content || '抱歉，我暂时无法回答，请稍后再试。';
+      addAIBubble(reply);
+    } else {
+      addAIBubble('抱歉，服务暂时异常，请稍后再试。');
+    }
+  } catch (e) {
+    removeTyping();
+    addAIBubble('网络连接异常，请检查网络后重试。');
+  }
+
+  isLoading = false;
+  sendBtn.disabled = inputEl.value.trim() === '';
+}
+</script>
+</body>
+</html>
